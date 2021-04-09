@@ -272,7 +272,7 @@ class XMLTVDocument(object):
     # quick tags
     self.quick_tag(element, 'title', title)
     if episode:
-      self.quick_tag(element, 'episode-num', episode, {'system': 'onscreen'})
+      self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
     if description:
       self.quick_tag(element, 'desc', description)
     if episode_title:

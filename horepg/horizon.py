@@ -129,9 +129,30 @@ def parse(raw, xmltv):
             description = None
 
         if 'seriesEpisodeNumber' in listing['program']:
-            episode = listing['program']['seriesEpisodeNumber']
+            try:
+                tmpEpisodeNumber = int(listing['program']['seriesEpisodeNumber'])
+                # HorizonTV often has bad data as "seriesEpisodeNumber" (e.g. a date). Their website only handles programs as "_isEpisodeWithSeasons" when the episode number is lower than their "episodeNumberThreshold" (set at 99999).
+                episodeNumber = str(tmpEpisodeNumber-1) if tmpEpisodeNumber > 0 and tmpEpisodeNumber <= 99999 else ''
+            except (ValueError, TypeError):
+                episodeNumber = ''
         else:
+            episodeNumber = ''
+
+        if 'seriesNumber' in listing['program']:
+            try:
+                tmpSeasonNumber = int(listing['program']['seriesNumber'])
+                # Perform a sanity check for "seriesNumber" (season) in a similar fashion as we did for "seriesEpisodeNumber".
+                seasonNumber = str(tmpSeasonNumber-1) if tmpSeasonNumber > 0 and tmpSeasonNumber <= 99999 else ''
+            except (ValueError, TypeError):
+                seasonNumber = ''
+        else:
+            seasonNumber = ''
+
+        if seasonNumber == '' and episodeNumber == '':
             episode = None
+        else:
+            # If we have any valid information, add it in the "xmltv_ns" format instead of the loose "onscreen" format. This format requires numbers to be zero-indexed (hence the -1 before).
+            episode = seasonNumber + ' . ' + episodeNumber + ' . '
 
         if 'secondaryTitle' in listing['program']:
             episode_title = listing['program']['secondaryTitle']
