@@ -76,11 +76,16 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
                 # channel logo
                 icon = None
                 for asset in channel['images']:
-                    if asset['assetType'] == 'station-logo-large':
-                        p = asset['url'].find('?')
-                        icon = asset['url'][:p]
+                    if asset['assetType'] == 'focused':
+                        icon = asset['url']
                         break
-                xmltv.addChannel(channel_id, channel['title'], icon)
+
+                suggested_channel_names = list()
+                suggested_channel_names.append(channel['title'])
+                if channel['channel_number']:
+                    suggested_channel_names.append(str(channel['channel_number']))
+                xmltv.addChannel(channel_id, suggested_channel_names, icon)
+
                 # Fetch in blocks of 6 hours (8 hours is the maximum block size allowed)
                 for i in range(0, nr_days*4):
                     start = int((calendar.timegm(now) + 21600 * i) * 1000) # milis

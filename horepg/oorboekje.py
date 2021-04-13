@@ -108,7 +108,7 @@ class OorboekjeParser(HTMLParser):
   def handle_data(self, data):
     if(self.state == OorboekjeParser.STATE_NEW_CHANNEL_TITLE):
       self.current_channel = data.strip()
-      self.xmltvdoc.addChannel(self.current_channel, self.current_channel)
+      self.xmltvdoc.addChannel(self.current_channel, [self.current_channel])
       self.state = OorboekjeParser.STATE_NEW_PROGRAMME
     elif(self.state == OorboekjeParser.STATE_NEW_PROGRAMME_TIME):
       if('-' in data):

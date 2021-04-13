@@ -241,28 +241,16 @@ class XMLTVDocument(object):
     self.document.documentElement.setAttribute('generator-info-name', 'HorEPG v1.0')
     self.document.documentElement.setAttribute('generator-info-url', 'beralt.nl/horepg')
 
-  def addChannel(self, channel_id, display_name, icon=None):
+  def addChannel(self, channel_id, suggested_names, icon=None):
     element = self.document.createElement('channel')
     element.setAttribute('id', channel_id)
 
-    if display_name in XMLTVDocument.replace_display_name:
-      for name in XMLTVDocument.replace_display_name[display_name]:
-        dn_element = self.document.createElement('display-name')
-        dn_text = self.document.createTextNode(name)
-        dn_element.appendChild(dn_text)
-        element.appendChild(dn_element)
-    else:
-      if type(display_name) == list:
-        for name in display_name:
-          dn_element = self.document.createElement('display-name')
-          dn_text = self.document.createTextNode(name)
-          dn_element.appendChild(dn_text)
-          element.appendChild(dn_element)
+    for display_name in suggested_names:
+      if display_name in XMLTVDocument.replace_display_name and len(XMLTVDocument.replace_display_name[display_name]) > 0:
+        for renamed_display_name in XMLTVDocument.replace_display_name[display_name]:
+          self.addDisplayName(element, renamed_display_name)
       else:
-        dn_element = self.document.createElement('display-name')
-        dn_text = self.document.createTextNode(display_name)
-        dn_element.appendChild(dn_text)
-        element.appendChild(dn_element)
+        self.addDisplayName(element, display_name)  
 
     if (icon):
       lu_element = self.document.createElement('icon')
@@ -270,6 +258,12 @@ class XMLTVDocument(object):
       element.appendChild(lu_element)
 
     self.document.documentElement.appendChild(element)
+
+  def addDisplayName(self, channel_element, display_name):
+    dn_element = self.document.createElement('display-name')
+    dn_text = self.document.createTextNode(display_name)
+    dn_element.appendChild(dn_text)
+    channel_element.appendChild(dn_element)
 
   def addProgramme(self, channel_id, title, start, end, episode=None, secondary_title=None, description=None,
                    categories=None):

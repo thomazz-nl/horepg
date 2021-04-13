@@ -64,7 +64,9 @@ class ChannelMap(object):
         for channel in data['channels']:
             for schedule in channel['stationSchedules']:
                 station = schedule['station']
-                self.channel_map[station['id']] = station
+                if 'channelNumber' in channel:
+                    station['channel_number'] = channel['channelNumber']
+                self.channel_map[station['id']] = station           
     def dump(self, xmltv):
         for key, value in self.channel_map.items():
             xmltv.addChannel(value['id'], value['title'])
