@@ -69,7 +69,7 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
         listings = Listings()
         # add listings for each of the channels
         for channel_id, channel in chmap.channel_map.items():
-            if channel['title'].lower() in (channel.lower() for channel in wanted_channels):
+            if channel['title'].lower() in (wanted_channel.lower() for wanted_channel in wanted_channels):
                 now = datetime.date.today().timetuple()
                 number = 0
                 xmltv = XMLTVDocument()

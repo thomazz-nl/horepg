@@ -130,39 +130,39 @@ def parse(raw, xmltv):
 
         if 'seriesEpisodeNumber' in listing['program']:
             try:
-                tmpEpisodeNumber = int(listing['program']['seriesEpisodeNumber'])
+                tmp_episode_number = int(listing['program']['seriesEpisodeNumber'])
                 # HorizonTV often has bad data as "seriesEpisodeNumber" (e.g. a date). Their website only handles programs as "_isEpisodeWithSeasons" when the episode number is lower than their "episodeNumberThreshold" (set at 99999).
-                episodeNumber = str(tmpEpisodeNumber-1) if tmpEpisodeNumber > 0 and tmpEpisodeNumber <= 99999 else ''
+                episode_number = str(tmp_episode_number-1) if tmp_episode_number > 0 and tmp_episode_number <= 99999 else ''
             except (ValueError, TypeError):
-                episodeNumber = ''
+                episode_number = ''
         else:
-            episodeNumber = ''
+            episode_number = ''
 
         if 'seriesNumber' in listing['program']:
             try:
-                tmpSeasonNumber = int(listing['program']['seriesNumber'])
+                tmp_season_number = int(listing['program']['seriesNumber'])
                 # Perform a sanity check for "seriesNumber" (season) in a similar fashion as we did for "seriesEpisodeNumber".
-                seasonNumber = str(tmpSeasonNumber-1) if tmpSeasonNumber > 0 and tmpSeasonNumber <= 99999 else ''
+                season_number = str(tmp_season_number-1) if tmp_season_number > 0 and tmp_season_number <= 99999 else ''
             except (ValueError, TypeError):
-                seasonNumber = ''
+                season_number = ''
         else:
-            seasonNumber = ''
+            season_number = ''
 
-        if seasonNumber == '' and episodeNumber == '':
+        if season_number == '' and episode_number == '':
             episode = None
         else:
             # If we have any valid information, add it in the "xmltv_ns" format instead of the loose "onscreen" format. This format requires numbers to be zero-indexed (hence the -1 before).
-            episode = seasonNumber + ' . ' + episodeNumber + ' . '
+            episode = season_number + ' . ' + episode_number + ' . '
 
         if 'secondaryTitle' in listing['program']:
-            episode_title = listing['program']['secondaryTitle']
+            secondary_title = listing['program']['secondaryTitle']
         else:
-            episode_title = None
+            secondary_title = None
 
         categories = []
         if 'categories' in listing['program']:
             for cat in listing['program']['categories']:
                 categories.append(cat['title'])
 
-        xmltv.addProgramme(channel_id, title, start, end, episode, episode_title, description, categories)
+        xmltv.addProgramme(channel_id, title, start, end, episode, secondary_title, description, categories)
     return len(data['listings']) - invalid

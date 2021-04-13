@@ -13,7 +13,10 @@ def warning(msg):
 
 class XMLTVDocument(object):
   # this renames some of the channels
-  add_display_name = {}
+  replace_display_name = {
+    #'sample channel name HD': [ 'sample channel name', 'some other name' ]
+  }
+  
   # Target names taken from: https://github.com/tvheadend/tvheadend/blob/master/src/epg.c
   # All entries must be lower case
   category_map = {
@@ -94,10 +97,13 @@ class XMLTVDocument(object):
     'triathlon': 'sports',
     'biathlon': 'sports',
     'schermen': 'sports',
+    'curling': 'sports',
+    'ijshockey': 'sports',
     'kunstschaatsen': 'sports',
     'gewichtheffen': 'sports',
     'boksen': 'sports',
     'stierenvechten': 'sports',
+    'esports': 'sports',
     'gamen': 'sports',
     'evenementen': 'special events (olympic games, world cup, etc.)',
     'olympische spelen': 'special events (olympic games, world cup, etc.)',
@@ -109,6 +115,8 @@ class XMLTVDocument(object):
     'teamsporten': 'team sports (excluding football)',
     'hockey': 'team sports (excluding football)',
     'basketbal': 'team sports (excluding football)',
+    'rugby': 'team sports (excluding football)',
+    'rugby league': 'team sports (excluding football)',
     'wielrennen': 'team sports (excluding football)',
     'atletiek': 'athletics',
     'turnen': 'athletics',
@@ -237,8 +245,8 @@ class XMLTVDocument(object):
     element = self.document.createElement('channel')
     element.setAttribute('id', channel_id)
 
-    if display_name in XMLTVDocument.add_display_name:
-      for name in XMLTVDocument.add_display_name[display_name]:
+    if display_name in XMLTVDocument.replace_display_name:
+      for name in XMLTVDocument.replace_display_name[display_name]:
         dn_element = self.document.createElement('display-name')
         dn_text = self.document.createTextNode(name)
         dn_element.appendChild(dn_text)
