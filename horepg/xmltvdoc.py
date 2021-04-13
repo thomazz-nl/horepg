@@ -234,10 +234,10 @@ class XMLTVDocument(object):
 
   def __init__(self):
     impl = xml.dom.minidom.getDOMImplementation()
-    doctype = impl.createDocumentType('tv', None, 'xmltv.dtd')
+    doctype = impl.createDocumentType('tv', None, 'https://raw.githubusercontent.com/XMLTV/xmltv/master/xmltv.dtd')
     self.document = impl.createDocument(None, 'tv', doctype)
     self.document.documentElement.setAttribute('source-info-url', 'https://horizon.tv')
-    self.document.documentElement.setAttribute('source-info-name', 'UPC Horizon API')
+    self.document.documentElement.setAttribute('source-info-name', 'Ziggo Go/Horizon API')
     self.document.documentElement.setAttribute('generator-info-name', 'HorEPG v1.0')
     self.document.documentElement.setAttribute('generator-info-url', 'beralt.nl/horepg')
 
@@ -271,7 +271,7 @@ class XMLTVDocument(object):
 
     self.document.documentElement.appendChild(element)
 
-  def addProgramme(self, channel_id, title, start, end, episode=None, episode_title=None, description=None,
+  def addProgramme(self, channel_id, title, start, end, episode=None, secondary_title=None, description=None,
                    categories=None):
     element = self.document.createElement('programme')
     element.setAttribute('start', XMLTVDocument.convert_time(int(start)))
@@ -279,13 +279,10 @@ class XMLTVDocument(object):
     element.setAttribute('channel', channel_id)
     # quick tags
     self.quick_tag(element, 'title', title)
-    if episode:
-      self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
+    if secondary_title:
+      self.quick_tag(element, 'sub-title', secondary_title)
     if description:
       self.quick_tag(element, 'desc', description)
-    if episode_title:
-      self.quick_tag(element, 'sub-title', episode_title)
-    # categories
     if categories:
       for cat in categories:
         cat_title = XMLTVDocument.map_category(cat.lower())
@@ -297,6 +294,9 @@ class XMLTVDocument(object):
         else:
           debug(
             "CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/'".format(channel_id, title, cat))
+    if episode:
+      self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
+    
     self.document.documentElement.appendChild(element)
 
   def map_category(cat):
