@@ -1,11 +1,20 @@
 import xml.dom.minidom
 import time
 import logging
-
+import re
 
 def debug(msg):
   logging.debug(msg)
 
+def sanitize_channel_id(channel_id):
+  # To pass XMLTV validation, the primary goal is to adhere to the xmltv.dtd (https://raw.githubusercontent.com/XMLTV/xmltv/master/xmltv.dtd).
+  # But XMLTV often (e.g. tv_validate_file) performs additional validation against a more strict Perl ValidateFile.pm file (https://raw.githubusercontent.com/XMLTV/xmltv/master/lib/ValidateFile.pm).
+  # The "channel id" definition in the DTD is comfortably loose although they suggest the RFC2838 format (https://tools.ietf.org/html/rfc2838).
+  # The "channel id" definition of ValidateFile.pm enforces a format according to this regex /^[-a-zA-Z0-9]+(\.[-a-zA-Z0-9]+)+$/ which does not match a RFC2838 format.
+  # Both validations do seem to approve the regex format, so let's stick to that.
+  channel_id_spec = re.compile('^[-a-zA-Z0-9]+(\.[-a-zA-Z0-9]+)+$')
+  sanitized_channel_name = channel_id.replace('_', '-').replace(':', '.')
+  return sanitized_channel_name if re.match(channel_id_spec, sanitized_channel_name) else channel_id
 
 def warning(msg):
   logging.warning(msg)
@@ -243,7 +252,7 @@ class XMLTVDocument(object):
 
   def addChannel(self, channel_id, suggested_names, icon=None):
     element = self.document.createElement('channel')
-    element.setAttribute('id', channel_id)
+    element.setAttribute('id', sanitize_channel_id(channel_id))
 
     for display_name in suggested_names:
       if display_name in XMLTVDocument.replace_display_name and len(XMLTVDocument.replace_display_name[display_name]) > 0:
@@ -270,7 +279,7 @@ class XMLTVDocument(object):
     element = self.document.createElement('programme')
     element.setAttribute('start', XMLTVDocument.convert_time(int(start)))
     element.setAttribute('stop', XMLTVDocument.convert_time(int(end)))
-    element.setAttribute('channel', channel_id)
+    element.setAttribute('channel', sanitize_channel_id(channel_id))
     # quick tags
     self.quick_tag(element, 'title', title)
     if secondary_title:
