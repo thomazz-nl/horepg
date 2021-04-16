@@ -286,17 +286,23 @@ class XMLTVDocument(object):
       self.quick_tag(element, 'sub-title', secondary_title)
     if description:
       self.quick_tag(element, 'desc', description)
+
+    unique_categories = set()
     if categories:
       for cat in categories:
         cat_title = XMLTVDocument.map_category(cat.lower())
-        if cat_title is not None:
-          self.quick_tag(element, 'category', cat_title)
-        elif '/' not in cat:
+        if cat.lower() in unique_categories or cat_title in unique_categories:
+          debug("CHANNEL '{}', PROGRAM '{}': Skipping duplicate category '{}'".format(channel_id, title, cat))
+        elif '/' not in cat and cat_title is None:
           warning("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'".format(channel_id, title, cat))
+          unique_categories.add(cat.lower())
           self.quick_tag(element, 'category', cat.lower())
+        elif cat_title:
+          unique_categories.add(cat_title)
+          self.quick_tag(element, 'category', cat_title)
         else:
-          debug(
-            "CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/'".format(channel_id, title, cat))
+          debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping".format(channel_id, title, cat))
+
     if episode:
       self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
     
