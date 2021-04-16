@@ -68,11 +68,13 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
         chmap = ChannelMap()
         listings = Listings()
         # add listings for each of the channels
-        for channel_id, channel in chmap.channel_map.items():
+        for channel_id, channel in chmap.channels.items():
             if channel['title'].lower() in (wanted_channel.lower() for wanted_channel in wanted_channels):
                 now = datetime.date.today().timetuple()
                 number = 0
                 xmltv = XMLTVDocument()
+                xmltv.setDate(chmap.updated_time)
+
                 # channel logo
                 icon = None
                 for asset in channel['images']:
@@ -84,6 +86,7 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
                 suggested_channel_names.append(channel['title'])
                 if channel['channel_number']:
                     suggested_channel_names.append(str(channel['channel_number']))
+
                 xmltv.addChannel(channel_id, suggested_channel_names, icon)
 
                 # Fetch in blocks of 6 hours (8 hours is the maximum block size allowed)

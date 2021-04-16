@@ -60,22 +60,25 @@ class ChannelMap(object):
         # load json
         data = json.loads(raw.decode('utf-8'))
         #setup channel map
-        self.channel_map = {}
+        self.channels = {}
+        self.updated_time = None
+        if 'updated' in data:
+            self.updated_time = data["updated"]
         for channel in data['channels']:
             for schedule in channel['stationSchedules']:
                 station = schedule['station']
                 if 'channelNumber' in channel:
                     station['channel_number'] = channel['channelNumber']
-                self.channel_map[station['id']] = station           
+                self.channels[station['id']] = station           
     def dump(self, xmltv):
-        for key, value in self.channel_map.items():
+        for key, value in self.channels.items():
             xmltv.addChannel(value['id'], [value['title']])
     def lookup(self, channel_id):
-        if channel_id in self.channel_map:
-            return self.channel_map[channel_id]
+        if channel_id in self.channels:
+            return self.channels[channel_id]
         return False
     def lookup_by_title(self, title):
-        for channel_id, channel in self.channel_map.items():
+        for channel_id, channel in self.channels.items():
             if channel['title'] == title:
                 return channel_id
         return False
@@ -121,6 +124,11 @@ def parse(raw, xmltv):
         channel_id = listing['stationId']
         title = listing['program']['title']
 
+        if 'secondaryTitle' in listing['program']:
+            secondary_title = listing['program']['secondaryTitle']
+        else:
+            secondary_title = None
+
         if 'longDescription' in listing['program']:
             description = listing['program']['longDescription']
         elif 'description' in listing['program']:
@@ -129,6 +137,55 @@ def parse(raw, xmltv):
             description = listing['program']['shortDescription']
         else:
             description = None
+
+        if 'directors' in listing['program']:
+            directors = listing['program']['directors']
+        else:
+            directors = list()
+
+        if 'cast' in listing['program']:
+            cast = listing['program']['cast']
+        else:
+            cast = list()
+
+        if 'year' in listing['program']:
+            copyright_year = listing['program']['year']
+        else:
+            copyright_year = None
+
+        categories = list()
+        if 'categories' in listing['program']:
+            for cat in listing['program']['categories']:
+                categories.append(cat['title'])
+
+        language = None
+        if 'audioTracks' in listing:
+            for audio_track in listing['audioTracks']:
+                if 'lang' in audio_track and 'audiopurpose' in audio_track and audio_track['audiopurpose'] == 'main':
+                    language = audio_track['lang']
+                    break
+
+        images = list()
+        if 'images' in listing['program']:
+            image_priority_1 = None
+            image_priority_2 = None
+            image_priority_3 = None
+            for image in listing['program']['images']:
+                if 'assetType' in image and 'url' in image:
+                    if image['assetType'] == 'HighResLandscape':
+                        image_priority_2 = image['url']
+                    #elif image['assetType'] == 'HighResLandscapeProductionStill':
+                        # skip: stills of the videostream are not worth adding
+                    elif image['assetType'] == 'HighResPortrait':
+                        image_priority_1 = image['url']
+                    elif image['assetType'] == 'TitleTreatment':
+                        image_priority_3 = image['url']
+            if image_priority_1:
+                images.append(image_priority_1)
+            if image_priority_2:
+                images.append(image_priority_2)
+            if image_priority_3:
+                images.append(image_priority_3)
 
         if 'seriesEpisodeNumber' in listing['program']:
             try:
@@ -156,15 +213,21 @@ def parse(raw, xmltv):
             # If we have any valid information, add it in the "xmltv_ns" format instead of the loose "onscreen" format. This format requires numbers to be zero-indexed (hence the -1 before).
             episode = season_number + ' . ' + episode_number + ' . '
 
-        if 'secondaryTitle' in listing['program']:
-            secondary_title = listing['program']['secondaryTitle']
-        else:
-            secondary_title = None
+        subtitles = list()
+        if 'subtitleLanguages' in listing:
+            for subtitle_language in listing['subtitleLanguages']:
+                subtitles.append(subtitle_language)
 
-        categories = []
-        if 'categories' in listing['program']:
-            for cat in listing['program']['categories']:
-                categories.append(cat['title'])
+        sign_languages = list()
+        if 'signLanguages' in listing:
+            for sign_language in listing['signLanguages']:
+                sign_languages.append(sign_language)
 
-        xmltv.addProgramme(channel_id, title, start, end, episode, secondary_title, description, categories)
+        parental_rating = None
+        if 'isAdult' in listing['program']:
+            is_adult = listing['program']['isAdult']
+        if 'parentalRating' in listing['program']:
+            parental_rating = '18' if is_adult else listing['program']['parentalRating']
+
+        xmltv.addProgramme(channel_id, title, start, end, cast, categories, copyright_year, description, directors, episode, images, language, secondary_title, subtitles, sign_languages, parental_rating)
     return len(data['listings']) - invalid

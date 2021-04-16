@@ -274,37 +274,77 @@ class XMLTVDocument(object):
     dn_element.appendChild(dn_text)
     channel_element.appendChild(dn_element)
 
-  def addProgramme(self, channel_id, title, start, end, episode=None, secondary_title=None, description=None,
-                   categories=None):
+  def addProgramme(self, channel_id, title, start, end, cast=list(), categories=list(), copyright_year=None, description=None, directors=list(), episode=None, images=list(), language=None, secondary_title=None, subtitles=list(), sign_languages=list(), parental_rating=list()):
     element = self.document.createElement('programme')
     element.setAttribute('start', XMLTVDocument.convert_time(int(start)))
     element.setAttribute('stop', XMLTVDocument.convert_time(int(end)))
     element.setAttribute('channel', sanitize_channel_id(channel_id))
     # quick tags
     self.quick_tag(element, 'title', title)
+
     if secondary_title:
       self.quick_tag(element, 'sub-title', secondary_title)
+
     if description:
       self.quick_tag(element, 'desc', description)
 
+    if len(cast) > 0 or len(directors) > 0:
+      credits_element = self.document.createElement('credits')
+
+      for director in directors:
+        self.quick_tag(credits_element, 'director', director)
+      for actor in cast:
+        self.quick_tag(credits_element, 'actor', actor)
+
+      element.appendChild(credits_element)
+
+    if copyright_year and len(copyright_year) == 4 and copyright_year.isdecimal():
+      self.quick_tag(element, 'date', copyright_year)
+
     unique_categories = set()
-    if categories:
-      for cat in categories:
-        cat_title = XMLTVDocument.map_category(cat.lower())
-        if cat.lower() in unique_categories or cat_title in unique_categories:
-          debug("CHANNEL '{}', PROGRAM '{}': Skipping duplicate category '{}'".format(channel_id, title, cat))
-        elif '/' not in cat and cat_title is None:
-          warning("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'".format(channel_id, title, cat))
-          unique_categories.add(cat.lower())
-          self.quick_tag(element, 'category', cat.lower())
-        elif cat_title:
-          unique_categories.add(cat_title)
-          self.quick_tag(element, 'category', cat_title)
-        else:
-          debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping".format(channel_id, title, cat))
+    for cat in categories:
+      cat_title = XMLTVDocument.map_category(cat.lower())
+      if cat.lower() in unique_categories or cat_title in unique_categories:
+        # debug("CHANNEL '{}', PROGRAM '{}': Skipping duplicate category '{}'".format(channel_id, title, cat))
+        continue
+      elif '/' not in cat and cat_title is None:
+        warning("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'".format(channel_id, title, cat))
+        unique_categories.add(cat.lower())
+        self.quick_tag(element, 'category', cat.lower(), { 'lang': 'nl' })        
+      elif cat_title:
+        unique_categories.add(cat_title)
+        self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
+      else:
+        debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping".format(channel_id, title, cat))
+
+    if language:
+      self.quick_tag(element, 'language', language)
+
+    for image in images:
+      self.quick_tag(element, 'icon', None, { 'src': image })
 
     if episode:
       self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
+    
+    if len(subtitles) > 0:
+      for subtitle in subtitles:
+        subtitles_element = self.document.createElement('subtitles')
+        subtitles_element.setAttribute('type', 'onscreen')
+        self.quick_tag(subtitles_element, 'language', subtitle)
+        element.appendChild(subtitles_element)
+
+    if len(sign_languages) > 0:
+      for sign_language in sign_languages:
+        sign_language_element = self.document.createElement('subtitles')
+        sign_language_element.setAttribute('type', 'deaf-signed')
+        self.quick_tag(sign_language_element, 'language', sign_language)
+        element.appendChild(sign_language_element)
+
+    if parental_rating:
+      parental_rating_element = self.document.createElement('rating')
+      parental_rating_element.setAttribute('system', 'Kijkwijzer')
+      self.quick_tag(parental_rating_element, 'value', parental_rating)
+      element.appendChild(parental_rating_element)
     
     self.document.documentElement.appendChild(element)
 
@@ -313,14 +353,19 @@ class XMLTVDocument(object):
       return XMLTVDocument.category_map[cat]
     return None
 
-  def quick_tag(self, parent, tag, content, attributes=False):
+  def quick_tag(self, parent, tag, content=None, attributes=False):
     element = self.document.createElement(tag)
-    text = self.document.createTextNode(content)
-    element.appendChild(text)
+    if content:
+      text = self.document.createTextNode(content)
+      element.appendChild(text)
     if attributes:
       for k, v in attributes.items():
         element.setAttribute(k, v)
     parent.appendChild(element)
+
+  def setDate(self, unix_time):
+    if isinstance(unix_time, int):
+      self.document.documentElement.setAttribute('date', XMLTVDocument.convert_time(unix_time/1000))
 
   def convert_time(t):
     return time.strftime('%Y%m%d%H%M%S', time.gmtime(t))
