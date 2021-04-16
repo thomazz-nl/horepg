@@ -15,12 +15,11 @@ def tvh_get_channels(host, port=9981, username='', password=''):
   try:
     host = host if host.startswith('http://') or host.startswith('https://') else '//' + host
     url_object = urlparse(host, scheme='http')
+    if url_object.port:
+      port = url_object.port
   except ValueError:
     port = 9981
 
-  if url_object.port:
-      port = url_object.port
-  
   request_uri = '{:s}://{:s}:{:d}{:s}/api/channel/list'.format(url_object.scheme, url_object.hostname, port, url_object.path)
   r = requests.get(request_uri, auth=(username, password))
   if r.status_code == 401:
