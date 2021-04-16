@@ -20,10 +20,26 @@ if __name__ == '__main__':
       if channel['title'] in wanted_channels:
         nr = 0
         now = datetime.date.today().timetuple()
-        xmltv.addChannel(channel_id, channel['title'], channel['images'])
-        for i in range(0, 5):
-          start = int((calendar.timegm(now) + 86400 * i) * 1000) # milis
-          end = start + (86400 * 1000)
+
+        # channel logo
+        icon = None
+        for asset in channel['images']:
+          if asset['assetType'] == 'focused':
+            icon = asset['url']
+            break
+
+        suggested_channel_names = list()
+        suggested_channel_names.append(channel['title'])
+        if channel['channel_number']:
+          suggested_channel_names.append(str(channel['channel_number']))
+
+        xmltv.addChannel(channel_id, suggested_channel_names, icon)
+
+        # Fetch in blocks of 6 hours (8 hours is the maximum block size allowed)
+        for i in range(0, 5*4):
+          start = int((calendar.timegm(now) + 21600 * i) * 1000) # milis
+          end = start + (21600 * 1000)
           nr = nr + listings.obtain(xmltv, channel_id, start, end)
+
         debug('Added {:d} programmes for channel {:s}'.format(nr, channel['title']))
     fd.write(xmltv.document.toprettyxml())

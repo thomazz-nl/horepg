@@ -69,7 +69,7 @@ class ChannelMap(object):
                 self.channel_map[station['id']] = station           
     def dump(self, xmltv):
         for key, value in self.channel_map.items():
-            xmltv.addChannel(value['id'], value['title'])
+            xmltv.addChannel(value['id'], [value['title']])
     def lookup(self, channel_id):
         if channel_id in self.channel_map:
             return self.channel_map[channel_id]
