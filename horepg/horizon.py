@@ -15,6 +15,9 @@ def debug(msg):
 def debug_json(data):
     debug(json.dumps(data, sort_keys=True, indent=4))
 
+def warning(msg):
+    logging.warning(msg)
+
 class HorizonRequest(object):
     hosts = ['web-api-salt.horizon.tv', 'web-api-pepper.horizon.tv']
 
@@ -26,8 +29,8 @@ class HorizonRequest(object):
         self.connection.request(method, path)
         response = self.connection.getresponse()
         if response.status == 500:
-            debug('Failed to request data from Horizon API, HTTP status {:0}'.format(response.status))
-            debug('Waiting for 5 seconds before trying again !')
+            debug('Failed to request data from Horizon API, HTTP status {:0}.'.format(response.status))
+            debug('Waiting for 5 seconds before trying again!')
             time.sleep(5)
             self.connection = http.client.HTTPSConnection(HorizonRequest.hosts[self.current])
             return self.request(method, path, retry=True)
@@ -56,7 +59,9 @@ class ChannelMap(object):
         if response:
             raw = response.read()
         else:
-            raise Exception('Failed to get data from Horizon API, HTTP status {:d}'.format(response.status))
+            error_msg = 'Failed to GET channels from Horizon API, HTTP status {:d}.'.format(response.status)
+            warning(error_msg)
+            raise Exception(error_msg)
         # load json
         data = json.loads(raw.decode('utf-8'))
         #setup channel map
@@ -101,7 +106,9 @@ class Listings(object):
         if response:
             return parse(response.read(), xmltv)
         else:
-            raise Exception('Failed to GET listings url:', response.status, response.reason)
+            error_msg = 'Failed to GET listings from Horizon API, HTTP status {:d}.'.format(response.status)
+            warning(error_msg)
+            raise Exception(error_msg)
 
 def parse(raw, xmltv):
     # parse raw data

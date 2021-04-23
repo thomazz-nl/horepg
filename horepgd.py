@@ -30,6 +30,12 @@ from horepg.xmltvdoc import XMLTVDocument
 def debug(msg):
     logging.debug(msg)
 
+def info(msg):
+    logging.info(msg)
+
+def warning(msg):
+    logging.warning(msg)
+
 def switch_user(uid=None, gid=None):
     # set gid first
     if gid is not None:
@@ -45,7 +51,7 @@ def daemonize():
                 # parent, so exit
                 sys.exit(0)
         except OSError as exc:
-            sys.stderr.write('failed to fork parent process {:0}\n'.format(exc))
+            warning('Failed to fork parent process {:0}'.format(exc))
             sys.exit(1)
     def redirect_stream(source, target=None):
         if target is None:
@@ -100,11 +106,18 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
                     start = int((calendar.timegm(now) + 21600 * i) * 1000) # milis
                     end = start + (21600 * 1000)
                     number = number + listings.obtain(xmltv, channel_id, start, end)
+
                 debug('Adding {:d} programmes for channel {:s}'.format(number, channel['title']))
+
                 if output_folder:
                     channel_name = channel['title'].lower().replace("/", "_")
-                    with open(os.path.join(output_folder, "{}.xml".format(channel_name)), 'wb', ) as fd:
-                        fd.write(xmltv.document.toprettyxml(encoding='UTF-8'))
+                    try:
+                        with open(os.path.join(output_folder, "{}.xml".format(channel_name)), 'wb', ) as fd:
+                            fd.write(xmltv.document.toprettyxml(encoding='UTF-8'))
+                    except OSError as exception:
+                        # If we can't write output, warn the user and stop fetching/processing more channels.
+                        warning(exception)
+                        break
                 else:
                     # send this channel to tvh for processing
                     tvh_client.send(xmltv.document.toprettyxml(encoding='UTF-8'))
@@ -131,27 +144,40 @@ def main():
     parser.add_argument('-o', nargs='?', metavar='OUTPUTPATH', dest='output_path', default=None, type=str, help='so not send to TVHeadend but store to disk in OUTPUTPATH')
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG)
     if args.daemonize:
         if 'grp' in sys.modules and 'pwd' in sys.modules:
+            # Detect Synology
+            if os.path.isfile('/etc.defaults/synoinfo.conf'):
+                # Use Synology Log Center syslog. For details: https://gist.github.com/thomazz-nl/093305c8d4b87fd00cd41036c333ab08
+                syslog = logging.handlers.SysLogHandler(address='/var/run/syslog', facility=logging.handlers.SysLogHandler.LOG_USER)
+                syslog.ident = 'System: '
+                syslog.setFormatter(logging.Formatter('SYSTEM:	Package [HorEPG]: %(message)s'))
+
+                root_logger = logging.getLogger()
+                root_logger.addHandler(syslog)
+                root_logger.setLevel(logging.INFO)
+            else:
+                # switch to syslog
+                logging.basicConfig(stream=logging.handlers.SysLogHandler())
+
             # switch user and do daemonization
             try:
                 uid = pwd.getpwnam(args.as_user).pw_uid
                 gid = grp.getgrnam(args.as_group).gr_gid
             except (KeyError, AttributeError):
-                debug('Unable to find the user {0} and group {1} for daemonization'.format(args.as_user, args.as_group))
+                warning('Unable to find the user {0} and/or group {1} for daemonization.'.format(args.as_user, args.as_group))
                 sys.exit(1)
 
             pid_fd = open(args.pid_filename, 'w')
 
             switch_user(uid, gid)
-            # switch to syslog
-            logging.basicConfig(stream=logging.handlers.SysLogHandler())
             daemonize()
         else:
-            debug('Daemonization failed. Try running without -d.')
+            warning('Daemonization failed. Try running without -d.')
             sys.exit(1)
     else:
+        # Only call basicConfig once. Subsequent calls are ignored by default, unless forced by force=True.
+        logging.basicConfig(level=logging.DEBUG)
         pid_fd = open(args.pid_filename, 'w')
 
     pid = str(os.getpid())
@@ -165,6 +191,7 @@ def main():
         run_import(channels, args.tvhsocket, args.do_radio_epg, args.nr_days, args.output_path)
     else:
         while True:
+            info('Fetching new EPG data.')
             run_import(channels, args.tvhsocket, args.do_radio_epg, args.nr_days)
             time.sleep(60*60*24)
 

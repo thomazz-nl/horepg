@@ -6,6 +6,9 @@ import re
 def debug(msg):
   logging.debug(msg)
 
+def info(msg):
+  logging.info(msg)
+
 def sanitize_channel_id(channel_id):
   # To pass XMLTV validation, the primary goal is to adhere to the xmltv.dtd (https://raw.githubusercontent.com/XMLTV/xmltv/master/xmltv.dtd).
   # But XMLTV often (e.g. tv_validate_file) performs additional validation against a more strict Perl ValidateFile.pm file (https://raw.githubusercontent.com/XMLTV/xmltv/master/lib/ValidateFile.pm).
@@ -15,10 +18,6 @@ def sanitize_channel_id(channel_id):
   channel_id_spec = re.compile('^[-a-zA-Z0-9]+(\.[-a-zA-Z0-9]+)+$')
   sanitized_channel_name = channel_id.replace('_', '-').replace(':', '.')
   return sanitized_channel_name if re.match(channel_id_spec, sanitized_channel_name) else channel_id
-
-def warning(msg):
-  logging.warning(msg)
-
 
 class XMLTVDocument(object):
   # this renames some of the channels
@@ -308,14 +307,14 @@ class XMLTVDocument(object):
         # debug("CHANNEL '{}', PROGRAM '{}': Skipping duplicate category '{}'".format(channel_id, title, cat))
         continue
       elif '/' not in cat and cat_title is None:
-        warning("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'".format(channel_id, title, cat))
+        info("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'.".format(channel_id, title, cat))
         unique_categories.add(cat.lower())
         self.quick_tag(element, 'category', cat.lower(), { 'lang': 'nl' })        
       elif cat_title:
         unique_categories.add(cat_title)
         self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
       else:
-        debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping".format(channel_id, title, cat))
+        debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping.".format(channel_id, title, cat))
 
     if language:
       self.quick_tag(element, 'language', language)
