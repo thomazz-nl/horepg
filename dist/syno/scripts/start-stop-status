@@ -1,17 +1,18 @@
 #!/bin/sh
 
-PACKAGE_DIR="/var/packages/$SYNOPKG_PKGNAME"
-INSTALL_DIR="${PACKAGE_DIR}/target"
+INSTALL_DIR="${SYNOPKG_PKGDEST}"
 PATH="/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
-USER="tvheadend-testing"
-GROUP="users"
+# optional - change user/group to run HorEPG in daemonized mode (default). Differs between Tvheadend package distributions. Using the same user as Tvheadend allows access to xmltv.sock/xml output.
+USER="sc-tvheadend"
+# the most current Tvheadend package (from SynoCommunity) adds a common "sc-media" group used by more packages. That group would give HorEPG more permissions than it needs.
+GROUP="tvheadend"
 # set these to the correct values if you use ACL in TVH
 TVHUSER=""
 TVHPASSWORD=""
 HOREPGD="${INSTALL_DIR}/horepgd.py"
 PID_FILE="${INSTALL_DIR}/horepgd.pid"
 # hope you use tvheadend-testing
-XMLTVSOCKET="/usr/local/tvheadend-testing/var/epggrab/xmltv.sock"
+XMLTVSOCKET="/usr/local/tvheadend/var/epggrab/xmltv.sock"
 
 start_daemon ()
 {
