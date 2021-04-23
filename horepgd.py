@@ -5,16 +5,22 @@
 #
 # This script provides a daemon which runs daily
 
-import os
-import sys
-import pwd
-import grp
+import argparse
+import calendar
+import datetime
+try:
+    import grp
+except ModuleNotFoundError:
+    print('ModuleNotFoundError: No module named \'grp\'. Daemonization not available on this OS.')
 import logging
 import logging.handlers
-import argparse
+import os
+try:
+    import pwd
+except ModuleNotFoundError:
+    print('ModuleNotFoundError: No module named \'pwd\'. Daemonization not available on this OS.')
+import sys
 import time
-import datetime
-import calendar
 
 from horepg.horizon import ChannelMap, Listings
 from horepg.oorboekje import OorboekjeParser
@@ -127,20 +133,24 @@ def main():
 
     logging.basicConfig(level=logging.DEBUG)
     if args.daemonize:
-        # switch user and do daemonization
-        try:
-            uid = pwd.getpwnam(args.as_user).pw_uid
-            gid = grp.getgrnam(args.as_group).gr_gid
-        except (KeyError, AttributeError):
-            debug('Unable to find the user {0} and group {1} for daemonization'.format(args.as_user, args.as_group))
+        if 'grp' in sys.modules and 'pwd' in sys.modules:
+            # switch user and do daemonization
+            try:
+                uid = pwd.getpwnam(args.as_user).pw_uid
+                gid = grp.getgrnam(args.as_group).gr_gid
+            except (KeyError, AttributeError):
+                debug('Unable to find the user {0} and group {1} for daemonization'.format(args.as_user, args.as_group))
+                sys.exit(1)
+
+            pid_fd = open(args.pid_filename, 'w')
+
+            switch_user(uid, gid)
+            # switch to syslog
+            logging.basicConfig(stream=logging.handlers.SysLogHandler())
+            daemonize()
+        else:
+            debug('Daemonization failed. Try running without -d.')
             sys.exit(1)
-
-        pid_fd = open(args.pid_filename, 'w')
-
-        switch_user(uid, gid)
-        # switch to syslog
-        logging.basicConfig(stream=logging.handlers.SysLogHandler())
-        daemonize()
     else:
         pid_fd = open(args.pid_filename, 'w')
 
