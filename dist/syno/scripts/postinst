@@ -1,0 +1,11 @@
+#!/bin/sh
+# postinst
+
+# Create a Python virtual environment.
+python3 -m venv --system-site-packages ${SYNOPKG_PKGDEST}/env
+
+# Add the virtual environment to the PATH variable before other possible Python paths.
+PATH="${SYNOPKG_PKGDEST}/env/bin:${PATH}"
+
+# Install HorEPG using the first python3 binary found in the PATH variable.
+python3 -m pip install --upgrade --force-reinstall ${SYNOPKG_PKGDEST}

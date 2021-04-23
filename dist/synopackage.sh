@@ -1,6 +1,23 @@
 #!/bin/sh
+# synopackage.sh
+# Reference for Synology package requirements: https://help.synology.com/developer-guide/synology_package/ 
 
-SRCS="../horepg/horizon.py ../horepgd.py ../horepg/tvheadend.py ../horepg/oorboekje.py ../horepg/xmltvdoc.py"
+SRCS="horepgd.py horxmltv.py setup.py horepg/horizon.py horepg/oorboekje.py horepg/tvheadend.py horepg/xmltvdoc.py"
+
+echo "Creating package.tgz... (a compressed file containing all files of our application)"
+tar --create --gzip --verbose --file=./syno/package.tgz --owner=root --group=root --directory=./../ $SRCS
+echo ""
+
+echo "Creating Synology package horepg.spk... (a SPK file in tar format, containing metadata and files)"
+cd syno && tar --create --verbose --file=./../horepg.spk --owner=root --group=root * && cd ..
+echo ""
+
+echo "Removing intermediate product package.tgz..."
+rm --verbose ./syno/package.tgz
+
+# FIXME: skipping signing for now
+exit
+
 GPG=gpg2
 GPG_OPTS="--ignore-time-conflict --ignore-valid-from --yes --batch"
 
@@ -11,12 +28,6 @@ SPK_CATALL_OUT="./CATALL.dat"
 SPK_SIG_FILE="syno_signature"
 SPK_TOKEN_FILE="$SPK_EXTRACT_DIR/syno_signature.asc"
 TIMESERVER="http://timestamp.synology.com/timestamp.php"
-
-tar -cpzf syno/package.tgz --owner=root --group=root $SRCS
-cd syno && tar -cvf ../horepg.spk --owner=root --group=root *
-
-# FIXME: skipping signing for now
-exit
 
 # sign the package
 $GPG $GPG_OPTS --list-secret-keys

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "HorEPG",
-    version = "0.1",
+    version = "2021.4.23.1",
     packages = find_packages(),
     scripts = ['horepgd.py', 'horxmltv.py'],
     install_requires = ['requests'],

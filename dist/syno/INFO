@@ -1,7 +1,13 @@
+# required
 package="HorEPG"
-version="1.0"
+version="2021.4.23.1"
+os_min_ver="6.1-15047"
 description="Parses Horizon EPG data and pushes XMLTV data to TVHeadend"
-support_url="https://github.com/beralt/horepg"
-maintainer="Beralt Meppelink"
 arch="noarch"
+maintainer="Beralt Meppelink"
+
+# optional
+maintainer_url="https://github.com/beralt/horepg"
+support_url="https://github.com/beralt/horepg"
 install_dep_packages="py3k"
+thirdparty="yes"
