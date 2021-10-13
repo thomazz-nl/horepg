@@ -1,6 +1,6 @@
 # required
 package="HorEPG"
-version="2021.4.23.1"
+version="2021.10.13.1"
 os_min_ver="6.1-15047"
 description="Parses Horizon EPG data and pushes XMLTV data to TVHeadend"
 arch="noarch"

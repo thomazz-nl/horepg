@@ -24,220 +24,257 @@ class XMLTVDocument(object):
   replace_display_name = {
     #'sample channel name HD': [ 'sample channel name', 'some other name' ]
   }
-  
-  # Target names taken from: https://github.com/tvheadend/tvheadend/blob/master/src/epg.c
+
+  # Target names taken from: https://github.com/tvheadend/tvheadend/blob/fdc3f945f2b759a743a595b134786b881538f52e/src/epg.c#L1741
   # All entries must be lower case
+  # Sorted alphabetically by value, key (for maintenance sake)
   category_map = {
     # 00
+    'event': '',        # Used for various categories
+    'miniseries': '',   # Format, not content
     'onbepaald': '',
-    'miniseries': '',  # Format, not content
-    'event': '',  # Used for various categories
 
     # 01
-    'tv drama': 'movie/drama',
-    'actie': 'movie/drama',
-    'familie': 'movie/drama',
-    'dramaseries': 'movie/drama',
-    'thriller': 'detective/thriller',
-    'detective': 'detective/thriller',
-    'mysterie': 'detective/thriller',
-    'misdaaddrama': 'detective/thriller',
+    'erotiek': 'adult movie/drama',
+    'erotisch': 'adult movie/drama',
     'avontuur': 'adventure/western/war',
     'western': 'adventure/western/war',
+    'komedie': 'comedy',
+    'sitcoms': 'comedy',
+    'standup komedie': 'comedy',
+    'zwarte komedie': 'comedy',
+    'detective': 'detective/thriller',
+    'misdaaddrama': 'detective/thriller',
+    'mysterie': 'detective/thriller',
+    'thriller': 'detective/thriller',
+    'actie': 'movie/drama',
+    'dramaseries': 'movie/drama',
+    'familie': 'movie/drama',
+    'film': 'movie/drama',
+    'film/cinema': 'movie/drama',
+    'speelfilm': 'movie/drama',
+    'tv drama': 'movie/drama',
+    'romantiek': 'romance',
+    'romantisch': 'romance',
+    'romantische komedie': 'romance',
+    'fantasy': 'science fiction/fantasy/horror',
     'horror': 'science fiction/fantasy/horror',
     'sci-fi': 'science fiction/fantasy/horror',
     'sci-fi/horror': 'science fiction/fantasy/horror',
     'sciencefiction': 'science fiction/fantasy/horror',
-    'fantasy': 'science fiction/fantasy/horror',
-    'komedie': 'comedy',
-    'sitcoms': 'comedy',
-    'zwarte komedie': 'comedy',
-    'standup komedie': 'comedy',
-    'melodrama': 'soap/melodrama/folkloric',
-    'soap': 'soap/melodrama/folkloric',
-    'romantiek': 'romance',
-    'romantisch': 'romance',
-    'romantische komedie': 'romance',
     'drama': 'serious/classical/religious/historical movie/drama',
     'historisch drama': 'serious/classical/religious/historical movie/drama',
-    'erotiek': 'adult movie/drama',
-    'erotisch': 'adult movie/drama',
+    'melodrama': 'soap/melodrama/folkloric',
+    'soap': 'soap/melodrama/folkloric',
 
     # 02
-    'nieuws': 'news/current affairs',
-    'actualiteit': 'news/current affairs',
-    'actualiteitenprogramma\'s': 'news/current affairs',
-    'weer': 'news/weather report',
-    'nieuws documentaire': 'news magazine',
-    'documentaire': 'documentary',
-    'historisch': 'documentary',
-    'geschiedenis': 'documentary',
-    'waar gebeurd': 'documentary',
-    'docudrama': 'documentary',
-    'docusoap': 'documentary',
+    'debat': 'discussion/interview/debate',
     'discussie': 'discussion/interview/debate',
     'interview': 'discussion/interview/debate',
-    'debat': 'discussion/interview/debate',
+    'docudrama': 'documentary',
+    'documentaire': 'documentary',
+    'docusoap': 'documentary',
+    'geschiedenis': 'documentary',
+    'historisch': 'documentary',
+    'waar gebeurd': 'documentary',
+    'nieuws documentaire': 'news magazine',
+    'actualiteit': 'news/current affairs',
+    'actualiteitenprogramma\'s': 'news/current affairs',
+    'nieuws': 'news/current affairs',
+    'weer': 'news/weather report',
 
     # 03
-    'show': 'show/game show',
+    #'': 'game show/quiz/contest',
+    'awards': 'show/game show',
     'entertainment': 'show/game show',
+    'show': 'show/game show',
     'spelshow': 'show/game show',
-    'variété': 'variety show',
-    'variete': 'variety show',
-    'theater': 'variety show',
-    'bloemlezing': 'variety show',
-    'talkshow': 'talk show',
     'talk show': 'talk show',
+    'talkshow': 'talk show',
+    'bloemlezing': 'variety show',
+    'theater': 'variety show',
+    'variete': 'variety show',
+    'variété': 'variety show',
 
     # 04
-    'sport': 'sports',
-    'extreme sporten': 'sports',
-    'snooker': 'sports',
-    'tennis': 'sports',
-    'golf': 'sports',
-    'snowboarden': 'sports',
-    'skiën': 'sports',
-    'freestyle skiën': 'sports',
-    'alpineskiën': 'sports',
-    'skispringen': 'sports',
-    'vliegsport': 'sports',
-    'triathlon': 'sports',
-    'biathlon': 'sports',
-    'schermen': 'sports',
-    'curling': 'sports',
-    'ijshockey': 'sports',
-    'kunstschaatsen': 'sports',
-    'gewichtheffen': 'sports',
-    'boksen': 'sports',
-    'stierenvechten': 'sports',
-    'esports': 'sports',
-    'gamen': 'sports',
+    'atletiek': 'athletics',
+    'turnen': 'athletics',
+    'paardensport': 'equestrian',
+    'polo': 'equestrian',
+    'american football': 'football/soccer',
+    'voetbal': 'football/soccer',
+    'boksen': 'martial sports',
+    'gevechtssport': 'martial sports',
+    'judo': 'martial sports',
+    'mixed martial arts (mma)': 'martial sports',
+    'schermen': 'martial sports',
+    'vechtsporten': 'martial sports',
+    'worstelen': 'martial sports',
+    'motorracen': 'motor sport',
+    'motors': 'motor sport',
+    'motorsport': 'motor sport',
     'evenementen': 'special events (olympic games, world cup, etc.)',
     'olympische spelen': 'special events (olympic games, world cup, etc.)',
     'sportmagazine': 'sports magazines',
     'sporttalkshow': 'sports magazines',
-    'voetbal': 'football/soccer',
-    'american football': 'football/soccer',
-    'tennis/squash': 'tennis/squash',
-    'teamsporten': 'team sports (excluding football)',
-    'hockey': 'team sports (excluding football)',
+    'beachvolleybal': 'sports',
+    'biathlon': 'sports',
+    'biljart': 'sports',
+    'boogschieten': 'sports',
+    'competitiesporten': 'sports',
+    'curling': 'sports',
+    'darts': 'sports',
+    'esports': 'sports',
+    'extreme': 'sports',
+    'extreme sporten': 'sports',
+    'gamen': 'sports',
+    'gewichtheffen': 'sports',
+    'golf': 'sports',
+    'ijshockey': 'sports',
+    'kunstschaatsen': 'sports',
+    'marathon': 'sports',
+    'mountainbiken': 'sports',
+    'pool': 'sports',
+    'running': 'sports',
+    'schietsport': 'sports',
+    'skateboarden': 'sports',
+    'snooker': 'sports',
+    'sport': 'sports',
+    'stierenvechten': 'sports',
+    'tafeltennis': 'sports',
+    'tennis': 'sports',
+    'triathlon': 'sports',
+    'vliegsport': 'sports',
     'basketbal': 'team sports (excluding football)',
-    'rugby': 'team sports (excluding football)',
+    'cricket': 'team sports (excluding football)',
+    'handbal': 'team sports (excluding football)',
+    'hockey': 'team sports (excluding football)',
     'rugby league': 'team sports (excluding football)',
+    'rugby union': 'team sports (excluding football)',
+    'rugby': 'team sports (excluding football)',
+    'teamsporten': 'team sports (excluding football)',
+    'volleybal': 'team sports (excluding football)',
     'wielrennen': 'team sports (excluding football)',
-    'atletiek': 'athletics',
-    'turnen': 'athletics',
-    'motorsport': 'motor sport',
-    'extreme': 'motor sport',
-    'motors': 'motor sport',
-    'motorracen': 'motor sport',
+    'tennis/squash': 'tennis/squash',
+    'duiken': 'water sport',
+    'kanoën': 'water sport',
+    'kunstzwemmen': 'water sport',
+    'roeien': 'water sport',
+    'surfen': 'water sport',
+    'water polo': 'water sport',
     'watersport': 'water sport',
+    'zeilen': 'water sport',
+    'zeilracen': 'water sport',
+    'zwemmen': 'water sport',
+    'alpineskiën': 'winter sports',
+    'freestyle skiën': 'winter sports',
+    'skispringen': 'winter sports',
+    'skiën': 'winter sports',
+    'snowboarden': 'winter sports',
     'wintersport': 'winter sports',
-    'paardensport': 'equestrian',
-    'gevechtssport': 'martial sports',
-    'worstelen': 'martial sports',
-    'mixed martial arts (mma)': 'martial sports',
 
     # 05
-    'kids/jeugd': 'children\'s / youth programs',
-    'kinderen': 'children\'s / youth programs',
+    'animatie': 'cartoons/puppets',
+    'anime': 'cartoons/puppets',
+    'poppenspel': 'cartoons/puppets',
+    'kids/jeugd': 'children\'s/youth programs',
+    'kinderen': 'children\'s/youth programs',
+    'jeugd 10 - 16': 'entertainment programs for 10 to 16',
+    'jeugd 6 - 14': 'entertainment programs for 6 to 14',
+    'educatie': 'informational/educational/school programs',
     'kids 0 - 6': 'pre-school children\'s programs',
     'kids, 0-6': 'pre-school children\'s programs',
-    'jeugd 6 - 14': 'entertainment programs for 6 to 14',
-    'jeugd 10 - 16': 'entertainment programs for 10 to 16',
-    'educatie': 'information/educational/school program',
-    'poppenspel': 'cartoon/puppets',
-    'animatie': 'cartoon/puppets',
-    'anime': 'cartoon/puppets',
 
     # 06
-    'muziek': 'music/ballet/dance',
-    'easy listening': 'music/ballet/dance',
-    'dans': 'music/ballet/dance',
-    'rock/pop': 'rock/pop',
-    'klassiek': 'serious music/classical music',
+    'ballet': 'ballet',
     'volksmuziek': 'folk/traditional music',
     'jazz': 'jazz',
+    'dans': 'music/ballet/dance',
+    'easy listening': 'music/ballet/dance',
+    'muziek': 'music/ballet/dance',
     'musical': 'musical/opera',
     'musical/opera': 'musical/opera',
     'opera': 'musical/opera',
-    'ballet': 'ballet',
+    'rock/pop': 'rock/pop',
+    'klassiek': 'serious music/classical music',
 
     # 07
-    'lifestyle': 'arts/culture (without music)',
-    'beeldende kunst': 'performing arts',
-    'podiumkunsten': 'performing arts',
-    'religie': 'religion',
-    'popart': 'popular culture/traditional arts',
-    'literatuur': 'literature',
-    'speelfilm': 'film/cinema',
-    'film': 'film/cinema',
-    'film/cinema': 'film/cinema',
-    'shorts': 'experimental film/video',
-    'special': 'broadcasting/press',
     'kunst magazine': 'arts magazines/culture magazines',
     'kunst/cultuur': 'arts magazines/culture magazines',
     'kunstnijverheid': 'arts magazines/culture magazines',
+    'lifestyle': 'arts/culture (without music)',
+    'special': 'broadcasting/press',
+    'shorts': 'experimental film/video',
     'mode': 'fashion',
+    #'': 'film/cinema',   # prevent any mapping to this as it will result in movies being treated as tvshows.
+    #'': 'fine arts',
+    'literatuur': 'literature',
+    #'': 'new media',
+    'beeldende kunst': 'performing arts',
+    'podiumkunsten': 'performing arts',
+    'popart': 'popular culture/traditional arts',
+    'religie': 'religion',
 
     # 08
-    'maatschappelijk': 'social/political issues/economics',
-    'consumentenprogramma\'s': 'social/political issues/economics',
-    'reality': 'social/political issues/economics',
-    'politiek': 'social/political issues/economics',
-    'oorlog': 'social/political issues/economics',
-    'militair': 'social/political issues/economics',
-    'zelfhulp': 'social/political issues/economics',
-    'veiling': 'social/political issues/economics',
-    'paranormaal': 'social/political issues/economics',
-    'lhbti': 'social/political issues/economics',
+    'business & financial': 'economics/social advisory',
+    'economie': 'economics/social advisory',
+    'misdaad': 'economics/social advisory',
+    'recht': 'economics/social advisory',
     'actualiteiten': 'magazines/reports/documentary',
     'cheerleading': 'magazines/reports/documentary',
     'opvoeden': 'magazines/reports/documentary',
-    'economie': 'economics/social advisory',
-    'business & financial': 'economics/social advisory',
-    'recht': 'economics/social advisory',
-    'misdaad': 'economics/social advisory',
     'beroemdheden': 'remarkable people',
     'biografie': 'remarkable people',
+    'consumentenprogramma\'s': 'social/political issues/economics',
+    'goede doelen': 'social/political issues/economics',
+    'lhbti': 'social/political issues/economics',
+    'maatschappelijk': 'social/political issues/economics',
+    'militair': 'social/political issues/economics',
+    'oorlog': 'social/political issues/economics',
+    'paranormaal': 'social/political issues/economics',
+    'politiek': 'social/political issues/economics',
+    'reality': 'social/political issues/economics',
+    'veiling': 'social/political issues/economics',
+    'zelfhulp': 'social/political issues/economics',
 
     # 09
-    'natuur': 'nature/animals/environment',
-    'natuur en milieu': 'nature/animals/environment',
-    'dieren': 'nature/animals/environment',
-    'technologie': 'technology/natural sciences',
-    'wetenschap': 'technology/natural sciences',
-    'computers': 'technology/natural sciences',
-    'geneeskunde': 'medicine/physiology/psychology',
-    'medisch': 'medicine/physiology/psychology',
+    #'': 'education/science/factual topics',
     'expedities': 'foreign countries/expeditions',
-    'sociologie': 'social/spiritual sciences',
-    'samenleving': 'social/spiritual sciences',
     'educatie divers': 'further education',
     'talen': 'languages',
+    'geneeskunde': 'medicine/physiology/psychology',
+    'medisch': 'medicine/physiology/psychology',
+    'dieren': 'nature/animals/environment',
+    'hondenshows': 'nature/animals/environment',
+    'natuur en milieu': 'nature/animals/environment',
+    'natuur': 'nature/animals/environment',
+    'samenleving': 'social/spiritual sciences',
+    'sociologie': 'social/spiritual sciences',
+    'computers': 'technology/natural sciences',
+    'technologie': 'technology/natural sciences',
+    'wetenschap': 'technology/natural sciences',
 
     # 10
-    'vrije tijd': 'leisure hobbies',
-    'vakantie': 'leisure hobbies',
-    'outdoor': 'leisure hobbies',
-    'auto\'s': 'leisure hobbies',
-    'vissen': 'leisure hobbies',
-    'verzamelen': 'leisure hobbies',
-    'landbouw': 'leisure hobbies',
-    'reizen': 'tourism / travel',
-    'klussen': 'handicraft',
-    'doe-het-zelf': 'handicraft',
-    'bouwen en verbouwen': 'handicraft',
-    'auto en motor': 'motoring',
-    'gezondheid': 'fitness and health',
+    'shoppen': 'advertisement/shopping',
+    'culinair': 'cooking',
+    'koken': 'cooking',
     'exercise': 'fitness and health',
     'fit en gezond': 'fitness and health',
-    'koken': 'cooking',
-    'culinair': 'cooking',
-    'shoppen': 'advertisement / shopping',
-    'tuinieren': 'gardening',
+    'gezondheid': 'fitness and health',
     'home & garden': 'gardening',
+    'tuinieren': 'gardening',
+    'bouwen en verbouwen': 'handicraft',
+    'doe-het-zelf': 'handicraft',
+    'klussen': 'handicraft',
+    'auto\'s': 'leisure hobbies',
+    'landbouw': 'leisure hobbies',
+    'outdoor': 'leisure hobbies',
+    'vakantie': 'leisure hobbies',
+    'verzamelen': 'leisure hobbies',
+    'vissen': 'leisure hobbies',
+    'vrije tijd': 'leisure hobbies',
+    'auto en motor': 'motoring',
+    'reizen': 'tourism/travel'
   }
 
   def __init__(self):
@@ -258,7 +295,7 @@ class XMLTVDocument(object):
         for renamed_display_name in XMLTVDocument.replace_display_name[display_name]:
           self.addDisplayName(element, renamed_display_name)
       else:
-        self.addDisplayName(element, display_name)  
+        self.addDisplayName(element, display_name)
 
     if (icon):
       lu_element = self.document.createElement('icon')
@@ -273,7 +310,7 @@ class XMLTVDocument(object):
     dn_element.appendChild(dn_text)
     channel_element.appendChild(dn_element)
 
-  def addProgramme(self, channel_id, title, start, end, cast=list(), categories=list(), copyright_year=None, description=None, directors=list(), episode=None, images=list(), language=None, secondary_title=None, subtitles=list(), sign_languages=list(), parental_rating=list()):
+  def addProgramme(self, channel_id, title, start, end, cast=list(), categories=list(), copyright_year=None, description=None, directors=list(), episode=None, images=list(), language=None, medium="TV", secondary_title=None, subtitles=list(), sign_languages=list(), parental_rating=list()):
     element = self.document.createElement('programme')
     element.setAttribute('start', XMLTVDocument.convert_time(int(start)))
     element.setAttribute('stop', XMLTVDocument.convert_time(int(end)))
@@ -289,11 +326,15 @@ class XMLTVDocument(object):
 
     if len(cast) > 0 or len(directors) > 0:
       credits_element = self.document.createElement('credits')
+      unique_cast = set()
 
       for director in directors:
         self.quick_tag(credits_element, 'director', director)
       for actor in cast:
-        self.quick_tag(credits_element, 'actor', actor)
+        # prevent duplicate actors
+        if actor not in unique_cast:
+          unique_cast.add(actor)
+          self.quick_tag(credits_element, 'actor', actor)
 
       element.appendChild(credits_element)
 
@@ -303,16 +344,32 @@ class XMLTVDocument(object):
     unique_categories = set()
     for cat in categories:
       cat_title = XMLTVDocument.map_category(cat.lower())
+
+      # stop processing if the current programme already has the current category.
       if cat.lower() in unique_categories or cat_title in unique_categories:
         # debug("CHANNEL '{}', PROGRAM '{}': Skipping duplicate category '{}'".format(channel_id, title, cat))
         continue
+      # if cat contains no "/" and has no mapping (None != falsey), add cat as custom category.
       elif '/' not in cat and cat_title is None:
         info("CHANNEL '{}', PROGRAM '{}': No XMLTV translation for category '{}'.".format(channel_id, title, cat))
         unique_categories.add(cat.lower())
-        self.quick_tag(element, 'category', cat.lower(), { 'lang': 'nl' })        
+        self.quick_tag(element, 'category', cat.lower(), { 'lang': 'nl' })
+      # add cat_title as category if it was mapped.
       elif cat_title:
-        unique_categories.add(cat_title)
-        self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
+        # if the program's category is part of the ETSI "movie/drama" genre, the Horizon medium type is "Movie" and does not have any "episode" information.
+        if XMLTVDocument.is_movie_genre(cat_title) and medium == "Movie" and not episode:
+          # add additional "movie" category if it has not been added yet. Tvheadend needs it to properly classify a recording as movie. See: https://github.com/tvheadend/tvheadend/blob/3d19cd20e87350db7e0d1dd6bd382ec9ee2853b3/src/dvr/dvr_rec.c#L497
+          if "movie" not in unique_categories:
+            unique_categories.add("movie")
+            self.quick_tag(element, 'category', "movie", { 'lang': 'en' })
+          unique_categories.add(cat_title)
+          self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
+        # if the program's category is NOT part of the ETSI "movie/drama" genre and the Horizon medium type is "TV".
+        elif not XMLTVDocument.is_movie_genre(cat_title) and medium == "TV":
+          unique_categories.add(cat_title)
+          self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
+        #else:
+          # debug("CHANNEL '{}', PROGRAM '{}': Skipping ambiguous category mapping for '{}' programme with category '{}'".format(channel_id, title, medium, cat))
       else:
         debug("CHANNEL '{}', PROGRAM '{}': Skipping category '{}' due to '/' or empty string mapping.".format(channel_id, title, cat))
 
@@ -324,7 +381,7 @@ class XMLTVDocument(object):
 
     if episode:
       self.quick_tag(element, 'episode-num', episode, {'system': 'xmltv_ns'})
-    
+
     if len(subtitles) > 0:
       for subtitle in subtitles:
         subtitles_element = self.document.createElement('subtitles')
@@ -344,8 +401,19 @@ class XMLTVDocument(object):
       parental_rating_element.setAttribute('system', 'Kijkwijzer')
       self.quick_tag(parental_rating_element, 'value', parental_rating)
       element.appendChild(parental_rating_element)
-    
+
     self.document.documentElement.appendChild(element)
+
+  def is_movie_genre(category_title):
+    return (category_title == 'adult movie/drama'
+      or category_title == 'adventure/western/war'
+      or category_title == 'comedy'
+      or category_title == 'detective/thriller'
+      or category_title == 'movie/drama'
+      or category_title == 'romance'
+      or category_title == 'science fiction/fantasy/horror'
+      or category_title == 'serious/classical/religious/historical movie/drama'
+      or category_title == 'soap/melodrama/folkloric')
 
   def map_category(cat):
     if cat in XMLTVDocument.category_map:
@@ -362,7 +430,7 @@ class XMLTVDocument(object):
         element.setAttribute(k, v)
     parent.appendChild(element)
 
-  def setDate(self, unix_time):
+  def set_date(self, unix_time):
     if isinstance(unix_time, int):
       self.document.documentElement.setAttribute('date', XMLTVDocument.convert_time(unix_time/1000))
 

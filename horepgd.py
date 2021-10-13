@@ -85,7 +85,7 @@ def run_import(wanted_channels, tvhsocket, fetch_radio=False, nr_days=5, output_
                 now = datetime.date.today().timetuple()
                 number = 0
                 xmltv = XMLTVDocument()
-                xmltv.setDate(chmap.updated_time)
+                xmltv.set_date(chmap.updated_time)
 
                 # channel logo
                 icon = None

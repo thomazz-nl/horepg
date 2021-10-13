@@ -15,7 +15,7 @@ if __name__ == '__main__':
     chmap = ChannelMap()
     listings = Listings()
     xmltv = XMLTVDocument()
-    xmltv.setDate(chmap.updated_time)
+    xmltv.set_date(chmap.updated_time)
 
     # add listings for each of the channels
     for channel_id, channel in chmap.channels.items():

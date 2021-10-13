@@ -8,4 +8,5 @@ python3 -m venv --system-site-packages ${SYNOPKG_PKGDEST}/env
 PATH="${SYNOPKG_PKGDEST}/env/bin:${PATH}"
 
 # Install HorEPG using the first python3 binary found in the PATH variable.
+python3 -m pip install --upgrade pip setuptools wheel
 python3 -m pip install --upgrade --force-reinstall ${SYNOPKG_PKGDEST}

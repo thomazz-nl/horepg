@@ -74,7 +74,7 @@ class ChannelMap(object):
                 station = schedule['station']
                 if 'channelNumber' in channel:
                     station['channel_number'] = channel['channelNumber']
-                self.channels[station['id']] = station           
+                self.channels[station['id']] = station
     def dump(self, xmltv):
         for key, value in self.channels.items():
             xmltv.addChannel(value['id'], [value['title']])
@@ -129,6 +129,7 @@ def parse(raw, xmltv):
         start = int(listing['startTime']) / 1000
         end = int(listing['endTime']) / 1000
         channel_id = listing['stationId']
+        medium = listing['program']['medium']       # "Movie" or "TV"
         title = listing['program']['title']
 
         if 'secondaryTitle' in listing['program']:
@@ -236,5 +237,5 @@ def parse(raw, xmltv):
         if 'parentalRating' in listing['program']:
             parental_rating = '18' if is_adult else listing['program']['parentalRating']
 
-        xmltv.addProgramme(channel_id, title, start, end, cast, categories, copyright_year, description, directors, episode, images, language, secondary_title, subtitles, sign_languages, parental_rating)
+        xmltv.addProgramme(channel_id, title, start, end, cast, categories, copyright_year, description, directors, episode, images, language, medium, secondary_title, subtitles, sign_languages, parental_rating)
     return len(data['listings']) - invalid
