@@ -19,11 +19,26 @@ def warning(msg):
     logging.warning(msg)
 
 class HorizonRequest(object):
-    hosts = ['web-api-salt.horizon.tv', 'web-api-pepper.horizon.tv']
+    # Find current API uri by executing: curl 'https://prod.spark.ziggogo.tv/nl/nl/config-service/conf/web/backoffice.json' | jq '.authService.URL'
+    # Which (at 2022-07-07) resulted in: https://obo-prod.oesp.ziggogo.tv/oesp/v4
+    # The website currently uses different paths, so they might be migrating to this:
+    # https://prod.spark.ziggogo.tv/eng/web/linear-service/v2/channels?cityId=65535&language=nl&productClass=Orion-DASH
+    hosts               = ['obo-prod.oesp.ziggogo.tv', 'web-api-pepper.horizon.tv']
+    apiTargets          = [ 'api', 'v1', 'v2', 'v3', 'v4']  # The value 'api' seems to give equal results as 'v1'.
+    countryCode         = 'NL'
+    currentApiTarget    = 4
+    deviceCode          = 'web'
+    languageCode        = 'nld'
+    platform            = 'oesp'    # Online Enterprise Service Platform
 
     def __init__(self):
         self.current = 0
         self.connection = http.client.HTTPSConnection(HorizonRequest.hosts[self.current])
+
+    def get_path(self, resource: str) -> str:
+        # Example path 1: /oesp/v4/NL/nld/web/channels/
+        # Example path 2: /oesp/v4/NL/nld/web/listings
+        return f'/{HorizonRequest.platform}/{HorizonRequest.apiTargets[HorizonRequest.currentApiTarget]}/{HorizonRequest.countryCode}/{HorizonRequest.languageCode}/{HorizonRequest.deviceCode}/{resource}'
 
     def request(self, method, path, retry=True):
         self.connection.request(method, path)
@@ -51,11 +66,11 @@ class HorizonRequest(object):
         return response
 
 class ChannelMap(object):
-    path = '/oesp/api/NL/nld/web/channels/'
+    resource = 'channels/'
 
     def __init__(self):
         self.horizon_request = HorizonRequest()
-        response = self.horizon_request.request('GET', ChannelMap.path)
+        response = self.horizon_request.request('GET', self.horizon_request.get_path(self.resource))
         if response:
             raw = response.read()
         else:
@@ -89,7 +104,7 @@ class ChannelMap(object):
         return False
 
 class Listings(object):
-    path = '/oesp/api/NL/nld/web/listings'
+    resource = 'listings'
 
     """
     Defaults to only few days for given channel
@@ -101,7 +116,7 @@ class Listings(object):
             start = int(time.time() * 1000)
         if not end:
             end = start + (86400 * 2 * 1000)
-        path = Listings.path + '?byStationId=' + channel_id + '&byStartTime=' + str(start) + '~' + str(end) + '&sort=startTime'
+        path = self.horizon_request.get_path(self.resource) + '?byStationId=' + channel_id + '&byStartTime=' + str(start) + '~' + str(end) + '&sort=startTime'
         response = self.horizon_request.request('GET', path)
         if response:
             return parse(response.read(), xmltv)
