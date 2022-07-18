@@ -95,7 +95,7 @@ class OorboekjeParser(HTMLParser):
     if(self.state == OorboekjeParser.STATE_NEW_PROGRAMME_WAIT_DESCR and tag == 'div'):
       # allow skipping of the description
       self.finish_programme()
-  
+
   def oortime_to_timestamp(self, oor):
     hourmin = oor.split(':', 2)
     cur_oor_hour = int(hourmin[0])
@@ -104,7 +104,7 @@ class OorboekjeParser(HTMLParser):
       self.oor_add_days = 1
     self.prev_oor_hour = cur_oor_hour
     return time.mktime((self.target.tm_year, self.target.tm_mon, self.target.tm_mday + self.oor_add_days, int(hourmin[0]), int(hourmin[1]), 0, self.target.tm_wday, self.target.tm_yday, self.target.tm_isdst))
-    
+
   def handle_data(self, data):
     if(self.state == OorboekjeParser.STATE_NEW_CHANNEL_TITLE):
       self.current_channel = data.strip()
