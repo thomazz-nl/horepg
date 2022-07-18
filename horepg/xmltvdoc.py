@@ -52,7 +52,6 @@ class XMLTVDocument(object):
     'dramaseries': 'movie/drama',
     'familie': 'movie/drama',
     'film': 'movie/drama',
-    'film/cinema': 'movie/drama',
     'speelfilm': 'movie/drama',
     'tv drama': 'movie/drama',
     'romantiek': 'romance',
@@ -219,7 +218,7 @@ class XMLTVDocument(object):
     'special': 'broadcasting/press',
     'shorts': 'experimental film/video',
     'mode': 'fashion',
-    #'': 'film/cinema',   # prevent any mapping to this as it will result in movies being treated as tvshows.
+    'film/cinema': 'film/cinema',
     #'': 'fine arts',
     'boeken & literatuur': 'literature',
     'literatuur': 'literature',
@@ -352,10 +351,20 @@ class XMLTVDocument(object):
 
       element.appendChild(credits_element)
 
+    has_year=False
+
     if copyright_year and len(copyright_year) == 4 and copyright_year.isdecimal():
       self.quick_tag(element, 'date', copyright_year)
+      has_year=True
 
     unique_categories = set()
+
+    # Add additional "movie" category to make sure Tvheadend can recognize a recording of this program as movie.
+    # Actual movie program listings always have copyright_year. Tv shows mislabeled as medium=Movie rarely do.
+    if medium == "Movie" and not episode and has_year:
+      unique_categories.add("movie")
+      self.quick_tag(element, 'category', "movie", { 'lang': 'en' })
+
     for cat in categories:
       cat_title = XMLTVDocument.map_category(cat.lower())
 
@@ -370,16 +379,9 @@ class XMLTVDocument(object):
         self.quick_tag(element, 'category', cat.lower(), { 'lang': 'nl' })
       # add cat_title as category if it was mapped.
       elif cat_title:
-        # if the program's category is part of the ETSI "movie/drama" genre, the Horizon medium type is "Movie" and does not have any "episode" information.
-        if XMLTVDocument.is_movie_genre(cat_title) and medium == "Movie" and not episode:
-          # add additional "movie" category if it has not been added yet. Tvheadend needs it to properly classify a recording as movie. See: https://github.com/tvheadend/tvheadend/blob/3d19cd20e87350db7e0d1dd6bd382ec9ee2853b3/src/dvr/dvr_rec.c#L497
-          if "movie" not in unique_categories:
-            unique_categories.add("movie")
-            self.quick_tag(element, 'category', "movie", { 'lang': 'en' })
-          unique_categories.add(cat_title)
-          self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
-        # if the program's category is NOT part of the ETSI "movie/drama" genre and the Horizon medium type is "TV".
-        elif not XMLTVDocument.is_movie_genre(cat_title) and medium == "TV":
+        # Add category unless it can confuse tvheadend (a tvshow with a category containing "film" or "movie" would cause a recording to be saved in the wrong directory).
+        # See: https://github.com/tvheadend/tvheadend/blob/3d19cd20e87350db7e0d1dd6bd382ec9ee2853b3/src/dvr/dvr_rec.c#L497
+        if (medium == "Movie" and not episode and has_year) or ('film' not in cat_title and 'movie' not in cat_title):
           unique_categories.add(cat_title)
           self.quick_tag(element, 'category', cat_title, { 'lang': 'en' })
         #else:
@@ -417,17 +419,6 @@ class XMLTVDocument(object):
       element.appendChild(parental_rating_element)
 
     self.document.documentElement.appendChild(element)
-
-  def is_movie_genre(category_title):
-    return (category_title == 'adult movie/drama'
-      or category_title == 'adventure/western/war'
-      or category_title == 'comedy'
-      or category_title == 'detective/thriller'
-      or category_title == 'movie/drama'
-      or category_title == 'romance'
-      or category_title == 'science fiction/fantasy/horror'
-      or category_title == 'serious/classical/religious/historical movie/drama'
-      or category_title == 'soap/melodrama/folkloric')
 
   def map_category(cat):
     if cat in XMLTVDocument.category_map:
