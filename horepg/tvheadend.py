@@ -30,8 +30,13 @@ def tvh_get_channels(host, port=9981, username='', password=''):
     sys.exit(1)
 
   if r.status_code == 401:
-    # Retry with HTTP digest authentication
-    r = requests.get(request_uri, auth=HTTPDigestAuth(username, password))
+    try:
+      # Retry with HTTP digest authentication
+      r = requests.get(request_uri, auth=HTTPDigestAuth(username, password), timeout=10)
+    except requests.exceptions.RequestException as error:
+      warning('Connection to Tvheadend URI {:s} failed: {:s}'.format(request_uri, str(error)))
+      sys.exit(1)
+
   if r.status_code != 200:
     error_msg = 'Connection to Tvheadend URI {:s} failed with status {:d}.'.format(request_uri, r.status_code)
     warning(error_msg)
